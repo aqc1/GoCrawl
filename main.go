@@ -3,8 +3,8 @@ package main
 import (
     "flag"
     "fmt"
-	"io/ioutil"
-	"net/http"
+    "io/ioutil"
+    "net/http"
     "os"
     "regexp"
     "strings"
