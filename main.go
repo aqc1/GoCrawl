@@ -35,14 +35,14 @@ func main() {
     scrapePage(page, &crawler, &mut, nil)
 
     // Concurrently Scrape New Pages
-    for{
+    for {
         tmp := make([]string, len(crawler.visited))
         copy(tmp, crawler.visited)
-        for _, url := range crawler.visited{
+        for _, url := range crawler.visited {
             go func(currentUrl string) {
                 wg.Add(1)
                 insidePage, err := getPage(currentUrl)
-                if err == nil{
+                if err == nil {
                     scrapePage(insidePage, &crawler, &mut, &wg)
                 } else {
                     wg.Done()
@@ -50,15 +50,14 @@ func main() {
             }(url)
         }
         wg.Wait()
-        if checkEqual(tmp, crawler.visited){
+        if checkEqual(tmp, crawler.visited) {
             break
         }
     }
 
     // Output Items
-    // TODO: Do this but with Go --> Probably Pipe to sort...
-    // `go run main.go | sort`
-    for _, item := range crawler.visited{
+    // Probably do this: go run main.go -url URL | sort > output.txt
+    for _, item := range crawler.visited {
         fmt.Println(item)
     }
 }
@@ -70,7 +69,7 @@ func usage() {
 }
 
 // Returns Byte Array of Page Source
-func getPage(url string, ) ([]byte, error){
+func getPage(url string, ) ([]byte, error) {
     resp, err := http.Get(url)
     if err != nil {
         return []byte{}, err
@@ -86,7 +85,10 @@ func getPage(url string, ) ([]byte, error){
 }
 
 // Extracts URLs from Page Body
-func scrapePage(page []byte, crawler *WebCrawler, mut *sync.Mutex, wg *sync.WaitGroup){
+func scrapePage(page []byte, crawler *WebCrawler, mut *sync.Mutex, wg *sync.WaitGroup) {
+    if wg != nil {
+        defer wg.Done()
+    }
     re := regexp.MustCompile(`<a href="(http|https)(.*?)>`)
     match := re.FindAllStringSubmatch(string(page), -1)
     mut.Lock()
@@ -98,13 +100,10 @@ func scrapePage(page []byte, crawler *WebCrawler, mut *sync.Mutex, wg *sync.Wait
         }
     }
     mut.Unlock()
-    if wg != nil {
-        wg.Done()
-    }
 }
 
 // See if URL was Already Found
-func checkIfVisited(testString string, crawler *WebCrawler) bool{
+func checkIfVisited(testString string, crawler *WebCrawler) bool {
     for _, url := range crawler.visited {
         if url == testString {
             return true
@@ -114,12 +113,12 @@ func checkIfVisited(testString string, crawler *WebCrawler) bool{
 }
 
 // Compare Two Slices
-func checkEqual(tmp, crawled []string) bool{
+func checkEqual(tmp, crawled []string) bool {
     if len(tmp) != len(crawled) {
         return false
     }
-    for index, val := range tmp{
-        if val != crawled[index]{
+    for indx, val := range tmp {
+        if val != crawled[indx] {
             return false
         }
     }
@@ -127,9 +126,9 @@ func checkEqual(tmp, crawled []string) bool{
 }
 
 // Trim Off Extra Stuff...
-func trimFromSpace(stringToTrim string) string{
-    if index := strings.Index(stringToTrim, " "); index != -1 {
-        return stringToTrim[:index]
+func trimFromSpace(toTrim string) string {
+    if indx := strings.Index(toTrim, " "); indx != -1 {
+        return toTrim[:indx]
     }
-    return stringToTrim
+    return toTrim
 }
