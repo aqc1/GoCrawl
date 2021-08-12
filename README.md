@@ -5,8 +5,8 @@ A simple webcrawler; nothing to fancy.
 * Not a bad idea to sort output: `./GoCrawl -url URL | sort`
 
 TODO:
-[ ] Clean Up Code
-[ ] Set up Flags for Stuff Like Max Threads, Max Depth, etc.
-[-] ~~Add Option to Output to a File~~ Better if Sorted, Then Redirected
-[ ] More Extensive Testing
-[ ] ???
+- [ ] Clean Up Code
+- [ ] Set up Flags for Stuff Like Max Threads, Max Depth, etc.
+- [x] ~~Add Option to Output to a File~~ Better if Sorted, Then Redirected
+- [ ] More Extensive Testing
+- [ ] ???
