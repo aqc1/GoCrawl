@@ -32,7 +32,7 @@ func main() {
     if err != nil {
         usage()
     }
-    scrapePage(page, &crawler, &mut)
+    scrapePage(page, &crawler, &mut, nil)
 
     // Concurrently Scrape New Pages
     for{
@@ -43,16 +43,17 @@ func main() {
                 wg.Add(1)
                 insidePage, err := getPage(currentUrl)
                 if err == nil{
-                    scrapePage(insidePage, &crawler, &mut)
+                    scrapePage(insidePage, &crawler, &mut, &wg)
+                } else {
+                    wg.Done()
                 }
-                wg.Done()
             }(url)
         }
+        wg.Wait()
         if checkEqual(tmp, crawler.visited){
             break
         }
     }
-    wg.Wait()
 
     // Output Items
     // TODO: Do this but with Go --> Probably Pipe to sort...
@@ -85,7 +86,7 @@ func getPage(url string, ) ([]byte, error){
 }
 
 // Extracts URLs from Page Body
-func scrapePage(page []byte, crawler *WebCrawler, mut *sync.Mutex){
+func scrapePage(page []byte, crawler *WebCrawler, mut *sync.Mutex, wg *sync.WaitGroup){
     re := regexp.MustCompile(`<a href="(http|https)(.*?)>`)
     match := re.FindAllStringSubmatch(string(page), -1)
     mut.Lock()
@@ -97,6 +98,9 @@ func scrapePage(page []byte, crawler *WebCrawler, mut *sync.Mutex){
         }
     }
     mut.Unlock()
+    if wg != nil {
+        wg.Done()
+    }
 }
 
 // See if URL was Already Found
