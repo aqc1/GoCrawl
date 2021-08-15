@@ -13,6 +13,7 @@ import (
 
 type WebCrawler struct {
     visited     []string
+    mut         sync.Mutex
 }
 
 func main() {
@@ -21,18 +22,17 @@ func main() {
     var mut sync.Mutex
 
     // CLI Arg
-    // TODO: Have to Come up With Better Default Option...
     var urlToCrawl string
-    flag.StringVar(&urlToCrawl, "url", "", "URL to Start Crawling At")
+    flag.StringVar(&urlToCrawl, "url", "https://127.0.0.1/", "URL to Start Crawling At")
     flag.Parse()
 
     // Initial Crawl
-    crawler := WebCrawler{[]string{}}
+    crawler := WebCrawler{[]string{}, mut}
     page, err := getPage(urlToCrawl)
     if err != nil {
         usage()
     }
-    scrapePage(page, &crawler, &mut, nil)
+    scrapePage(page, &crawler, nil)
 
     // Concurrently Scrape New Pages
     for {
@@ -43,7 +43,7 @@ func main() {
                 wg.Add(1)
                 insidePage, err := getPage(currentUrl)
                 if err == nil {
-                    scrapePage(insidePage, &crawler, &mut, &wg)
+                    scrapePage(insidePage, &crawler, &wg)
                 } else {
                     wg.Done()
                 }
@@ -65,6 +65,7 @@ func main() {
 // Explains Usage when Something Goes Wrong (Probably Forgot a Flag)
 func usage() {
     fmt.Println("[+] Usage: ./GoCrawl -url URL")
+    fmt.Println("[!] Default URL: https://127.0.0.1/")
     os.Exit(1)
 }
 
@@ -85,13 +86,13 @@ func getPage(url string, ) ([]byte, error) {
 }
 
 // Extracts URLs from Page Body
-func scrapePage(page []byte, crawler *WebCrawler, mut *sync.Mutex, wg *sync.WaitGroup) {
+func scrapePage(page []byte, crawler *WebCrawler, wg *sync.WaitGroup) {
     if wg != nil {
         defer wg.Done()
     }
     re := regexp.MustCompile(`<a href="(http|https)(.*?)>`)
     match := re.FindAllStringSubmatch(string(page), -1)
-    mut.Lock()
+    crawler.mut.Lock()
     for _, element := range match {
         url := strings.Replace(strings.Replace(element[0], "<a href=", "", -1), ">", "", -1)
         trimmed := trimFromSpace(url)
@@ -99,7 +100,7 @@ func scrapePage(page []byte, crawler *WebCrawler, mut *sync.Mutex, wg *sync.Wait
             crawler.visited = append(crawler.visited, trimmed)
         }
     }
-    mut.Unlock()
+    crawler.mut.Unlock()
 }
 
 // See if URL was Already Found
