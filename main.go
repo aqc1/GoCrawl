@@ -17,18 +17,25 @@ type WebCrawler struct {
 }
 
 func main() {
-    // Set Up Waitgroup/Mutex
+    // Set Up Waitgroup
     var wg sync.WaitGroup
 
     // CLI Arg
     var urlToCrawl string
-    flag.StringVar(&urlToCrawl, "url", "https://127.0.0.1/", "URL to Start Crawling At")
+    flag.StringVar(
+        &urlToCrawl, 
+        "url", 
+        "https://127.0.0.1/", 
+        "URL to Start Crawling At"
+    )
     flag.Parse()
 
-    // Initial Crawl
+    // Create crawler
     crawler := WebCrawler{
         visited: []string{},
     }
+
+    // Crawl first page
     page, err := getPage(urlToCrawl)
     if err != nil {
         usage()
@@ -37,8 +44,13 @@ func main() {
 
     // Concurrently Scrape New Pages
     for {
+        // There's probably a more optimized to do this...but it works
+        // TODO: Optimize this
         tmp := make([]string, len(crawler.visited))
         copy(tmp, crawler.visited)
+
+        // For every found URL, spin up a go func
+        // TODO: Optimize this
         for _, url := range crawler.visited {
             go func(currentUrl string) {
                 wg.Add(1)
@@ -51,6 +63,9 @@ func main() {
             }(url)
         }
         wg.Wait()
+
+        // Check if no new URLs are found
+        // Find a better way to verify this (?)
         if checkEqual(tmp, crawler.visited) {
             break
         }
@@ -72,11 +87,13 @@ func usage() {
 
 // Returns Byte Array of Page Source
 func getPage(url string, ) ([]byte, error) {
+    // Grab page
     resp, err := http.Get(url)
     if err != nil {
         return []byte{}, err
     }
 
+    // Grab body of page
     body, err := ioutil.ReadAll(resp.Body)
     defer resp.Body.Close()
     if err != nil {
@@ -91,8 +108,12 @@ func scrapePage(page []byte, crawler *WebCrawler, wg *sync.WaitGroup) {
     if wg != nil {
         defer wg.Done()
     }
+
+    // Search for http or https
     re := regexp.MustCompile(`<a href="(http|https)(.*?)>`)
     match := re.FindAllStringSubmatch(string(page), -1)
+
+    // Extract just the URL
     crawler.mut.Lock()
     for _, element := range match {
         url := strings.Replace(strings.Replace(element[0], "<a href=", "", -1), ">", "", -1)
