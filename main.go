@@ -12,14 +12,13 @@ import (
 )
 
 type WebCrawler struct {
-    visited     []string
     mut         sync.Mutex
+    visited     []string
 }
 
 func main() {
     // Set Up Waitgroup/Mutex
     var wg sync.WaitGroup
-    var mut sync.Mutex
 
     // CLI Arg
     var urlToCrawl string
@@ -27,7 +26,9 @@ func main() {
     flag.Parse()
 
     // Initial Crawl
-    crawler := WebCrawler{[]string{}, mut}
+    crawler := WebCrawler{
+        visited: []string{},
+    }
     page, err := getPage(urlToCrawl)
     if err != nil {
         usage()
