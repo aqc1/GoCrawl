@@ -6,7 +6,6 @@ TODO:
         - Checking if URLs were found
         - Scraping each URL
     - Add:
-        - Sorting Option for Found URLs
         - Output Option to Send to File (Sort first if desired)
 */
 
