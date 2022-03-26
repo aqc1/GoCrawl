@@ -1,5 +1,15 @@
 package main
 
+/*
+TODO:
+    - Optimize:
+        - Checking if URLs were found
+        - Scraping each URL
+    - Add:
+        - Sorting Option for Found URLs
+        - Output Option to Send to File (Sort first if desired)
+*/
+
 import (
     "flag"
     "fmt"
@@ -72,7 +82,7 @@ func main() {
     }
 
     // Output Items
-    // Probably do this: go run main.go -url URL | sort > output.txt
+    // Probably do this: go run main.go -url URL | sort | tee found_urls.txt
     for _, item := range crawler.visited {
         fmt.Println(item)
     }
