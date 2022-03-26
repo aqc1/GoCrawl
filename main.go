@@ -2,17 +2,16 @@ package main
 
 /*
 TODO:
-    - Optimize:
-        - Checking if URLs were found
-        - Scraping each URL
-    - Add:
-        - Output Option to Send to File (Sort first if desired)
+- Optimize the Following:
+    - Checking if URLs were found
+    - Scraping each URL
 */
 
 import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"regexp"
@@ -21,9 +20,26 @@ import (
 	"sync"
 )
 
+// Web Crawler Struct
 type WebCrawler struct {
 	mut     sync.Mutex
 	visited []string
+}
+
+// Struct to Make Checking if -output was Set
+type fileFlag struct {
+	set  bool
+	file string
+}
+
+func (ff *fileFlag) Set(val string) error {
+	ff.file = val
+	ff.set = true
+	return nil
+}
+
+func (ff *fileFlag) String() string {
+	return ff.file
 }
 
 func main() {
@@ -33,6 +49,7 @@ func main() {
 	// CLI Arg
 	var urlToCrawl string
 	var sortList bool
+	var outputFile fileFlag
 
 	flag.StringVar(
 		&urlToCrawl,
@@ -48,6 +65,12 @@ func main() {
 		"Sort URLs",
 	)
 
+	flag.Var(
+		&outputFile,
+		"output",
+		"File to Output to",
+	)
+
 	flag.Parse()
 
 	// Create crawler
@@ -58,7 +81,7 @@ func main() {
 	// Crawl first page
 	page, err := getPage(urlToCrawl)
 	if err != nil {
-		usage()
+		log.Println(err)
 	}
 	scrapePage(page, &crawler, nil)
 
@@ -92,20 +115,31 @@ func main() {
 	}
 
 	// Output Items
-	// Probably do this: go run main.go -url URL -sort | tee found_urls.txt
+	// Sorting URLs
 	if sortList {
 		sort.Strings(crawler.visited)
 	}
-	for _, item := range crawler.visited {
-		fmt.Println(item)
-	}
-}
 
-// Explains Usage when Something Goes Wrong (Probably Forgot a Flag)
-func usage() {
-	fmt.Println("[+] Usage: ./GoCrawl -url URL")
-	fmt.Println("[!] Default URL: https://127.0.0.1/")
-	os.Exit(1)
+	// Creating Output File
+	if outputFile.set {
+		f, err := os.Create(outputFile.file)
+		if err != nil {
+			log.Println(err)
+		}
+		defer f.Close()
+		for _, item := range crawler.visited {
+			line := fmt.Sprintf("%s\n", item)
+			if _, err := f.WriteString(line); err != nil {
+				log.Println(err)
+			}
+		}
+
+	} else {
+		// Output URLs
+		for _, item := range crawler.visited {
+			fmt.Println(item)
+		}
+	}
 }
 
 // Returns Byte Array of Page Source
