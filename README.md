@@ -2,11 +2,10 @@
 
 A simple webcrawler; nothing to fancy.
 * Usage: `./GoCrawl -url URL`
-* Not a bad idea to sort output: `./GoCrawl -url URL | sort`
+* Not a bad idea to sort output: `./GoCrawl -url URL | sort | tee found_urls.txt`
 
 TODO:
 - [ ] Clean Up Code
-- [ ] Set up Flags for Stuff Like Max Threads, Max Depth, etc.
-- [x] ~~Add Option to Output to a File~~ Better if Sorted, Then Redirected
+- [ ] Find a Way to Optimize Finding URLs, Checking of URL was Already Found, etc.
+- [x] ~~Add Option to Output to a File~~ Better if Sorted, Then Redirected to a Separate File
 - [ ] More Extensive Testing
-- [ ] ???
