@@ -92,7 +92,7 @@ func main() {
 	}
 
 	// Output Items
-	// Probably do this: go run main.go -url URL | sort | tee found_urls.txt
+	// Probably do this: go run main.go -url URL -sort | tee found_urls.txt
 	if sortList {
 		sort.Strings(crawler.visited)
 	}
