@@ -171,7 +171,7 @@ func scrapePage(page []byte, crawler *WebCrawler, wg *sync.WaitGroup) {
 		defer wg.Done()
 	}
 	// Search for http or https
-	re_link := regexp.MustCompile(`<a( (.*)?=(.*?))? href="(http|https)(.*?)">`)
+	re_link := regexp.MustCompile(`<a( (.*)?=(.*?))* href="(http|https)(.*?)">`)
 	re_reference := regexp.MustCompile(`<a(.*)?href=`)
 	match := re_link.FindAllStringSubmatch(string(page), -1)
 
