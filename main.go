@@ -1,12 +1,5 @@
 package main
 
-/*
-TODO:
-- Optimize the Following:
-    - Checking if URLs were found
-    - Scraping each URL
-*/
-
 import (
 	"flag"
 	"fmt"
@@ -86,15 +79,14 @@ func main() {
 	scrapePage(page, &crawler, nil)
 
 	// Concurrently Scrape New Pages
+	newlyFound := make([]string, len(crawler.visited))
+	copy(newlyFound, crawler.visited)
 	for {
-		// There's probably a more optimized to do this...but it works
-		// TODO: Optimize this
-		tmp := make([]string, len(crawler.visited))
-		copy(tmp, crawler.visited)
+		currentlyFound := make([]string, len(crawler.visited))
+		copy(currentlyFound, crawler.visited)
 
-		// For every found URL, spin up a go func
-		// TODO: Optimize this
-		for _, url := range crawler.visited {
+		// For every found URL, spin up a thread
+		for _, url := range newlyFound {
 			wg.Add(1)
 			go func(currentUrl string) {
 				insidePage, err := getPage(currentUrl)
@@ -108,9 +100,11 @@ func main() {
 		wg.Wait()
 
 		// Check if no new URLs are found
-		// Find a better way to verify this (?)
-		if checkEqual(tmp, crawler.visited) {
+		// Find which URLs are new...only scrape them
+		if checkEqual(currentlyFound, crawler.visited) {
 			break
+		} else {
+			newlyFound = crawler.visited[len(newlyFound):]
 		}
 	}
 
