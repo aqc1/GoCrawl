@@ -43,6 +43,7 @@ func main() {
 	var urlToCrawl string
 	var sortList bool
 	var outputFile fileFlag
+	var maxDepth int
 
 	flag.StringVar(
 		&urlToCrawl,
@@ -64,6 +65,13 @@ func main() {
 		"File to Output to",
 	)
 
+	flag.IntVar(
+		&maxDepth,
+		"depth",
+		1,
+		"Max Depth of Crawling",
+	)
+
 	flag.Parse()
 
 	// Create crawler
@@ -72,16 +80,18 @@ func main() {
 	}
 
 	// Crawl first page
+	timesCrawled := 0
 	page, err := getPage(urlToCrawl)
 	if err != nil {
 		log.Println(err)
 	}
+	timesCrawled += 1
 	scrapePage(page, &crawler, nil)
 
 	// Concurrently Scrape New Pages
 	newlyFound := make([]string, len(crawler.visited))
 	copy(newlyFound, crawler.visited)
-	for {
+	for timesCrawled <= maxDepth {
 		currentlyFound := make([]string, len(crawler.visited))
 		copy(currentlyFound, crawler.visited)
 
@@ -98,6 +108,7 @@ func main() {
 			}(url)
 		}
 		wg.Wait()
+		timesCrawled += 1
 
 		// Check if no new URLs are found
 		// Find which URLs are new...only scrape them
