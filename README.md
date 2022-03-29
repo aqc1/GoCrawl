@@ -5,6 +5,7 @@ A simple webcrawler; nothing to fancy.
 * Not a bad idea to sort output: `./GoCrawl -url URL -output FILE -sort`
 
 TODO:
+- [ ] Add some way to limit depth of crawling
 - [ ] Clean Up Code
 - [x] Find a Way to Optimize Finding URLs
 - [x] Get CLI Arg to Sort 

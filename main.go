@@ -89,7 +89,7 @@ func main() {
 		for _, url := range newlyFound {
 			wg.Add(1)
 			go func(currentUrl string) {
-				insidePage, err := getPage(currentUrl)
+				insidePage, err := getPage(currentUrl[1 : len(currentUrl)-1])
 				if err == nil {
 					scrapePage(insidePage, &crawler, &wg)
 				} else {
@@ -159,15 +159,15 @@ func scrapePage(page []byte, crawler *WebCrawler, wg *sync.WaitGroup) {
 	if wg != nil {
 		defer wg.Done()
 	}
-
 	// Search for http or https
-	re := regexp.MustCompile(`<a href="(http|https)(.*?)>`)
-	match := re.FindAllStringSubmatch(string(page), -1)
+	re_link := regexp.MustCompile(`<a( class="link")? href="(http|https)(.*?)">`)
+	re_reference := regexp.MustCompile(`<a(.*)?href=`)
+	match := re_link.FindAllStringSubmatch(string(page), -1)
 
 	// Extract just the URL
 	crawler.mut.Lock()
 	for _, element := range match {
-		url := strings.Replace(strings.Replace(element[0], "<a href=", "", -1), ">", "", -1)
+		url := strings.Replace(re_reference.ReplaceAllString(element[0], ""), ">", "", -1)
 		trimmed := trimFromSpace(url)
 		if !checkIfVisited(trimmed, crawler) {
 			crawler.visited = append(crawler.visited, trimmed)
