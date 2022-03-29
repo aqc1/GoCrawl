@@ -91,7 +91,7 @@ func main() {
 	// Concurrently Scrape New Pages
 	newlyFound := make([]string, len(crawler.visited))
 	copy(newlyFound, crawler.visited)
-	for timesCrawled <= maxDepth {
+	for timesCrawled < maxDepth {
 		currentlyFound := make([]string, len(crawler.visited))
 		copy(currentlyFound, crawler.visited)
 
