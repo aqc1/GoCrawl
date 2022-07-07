@@ -13,7 +13,7 @@ import (
 	"sync"
 )
 
-// Web Crawler Struct
+// WebCrawler Struct - visited: list of visited URLs
 type WebCrawler struct {
 	mut     sync.Mutex
 	visited []string
@@ -85,7 +85,7 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-	timesCrawled += 1
+	timesCrawled++
 	scrapePage(page, &crawler, nil)
 
 	// Concurrently Scrape New Pages
@@ -108,7 +108,7 @@ func main() {
 			}(url)
 		}
 		wg.Wait()
-		timesCrawled += 1
+		timesCrawled++
 
 		// Check if no new URLs are found
 		// Find which URLs are new...only scrape them
@@ -171,14 +171,14 @@ func scrapePage(page []byte, crawler *WebCrawler, wg *sync.WaitGroup) {
 		defer wg.Done()
 	}
 	// Search for http or https
-	re_link := regexp.MustCompile(`<a( (.*)?=(.*?))* href="(http|https)(.*?)">`)
-	re_reference := regexp.MustCompile(`<a(.*)?href=`)
-	match := re_link.FindAllStringSubmatch(string(page), -1)
+	reLink := regexp.MustCompile(`<a( (.*)?=(.*?))* href="(http|https)(.*?)">`)
+	reReference := regexp.MustCompile(`<a(.*)?href=`)
+	match := reLink.FindAllStringSubmatch(string(page), -1)
 
 	// Extract just the URL
 	crawler.mut.Lock()
 	for _, element := range match {
-		url := strings.Replace(re_reference.ReplaceAllString(element[0], ""), ">", "", -1)
+		url := strings.Replace(reReference.ReplaceAllString(element[0], ""), ">", "", -1)
 		trimmed := trimFromSpace(url)
 		if !checkIfVisited(trimmed, crawler) {
 			crawler.visited = append(crawler.visited, trimmed)
