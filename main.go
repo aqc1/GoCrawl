@@ -148,6 +148,8 @@ func main() {
 }
 
 // Returns Byte Array of Page Source
+// :param url: URL to get the response from
+// :return: body of the response, errors
 func getPage(url string) ([]byte, error) {
 	// Grab page
 	resp, err := http.Get(url)
@@ -166,6 +168,9 @@ func getPage(url string) ([]byte, error) {
 }
 
 // Extracts URLs from Page Body
+// :param page: Page to scrape URLs from
+// :param crawler: WebCrawler struct
+// :param wg: Wait Group for async
 func scrapePage(page []byte, crawler *WebCrawler, wg *sync.WaitGroup) {
 	if wg != nil {
 		defer wg.Done()
@@ -188,6 +193,9 @@ func scrapePage(page []byte, crawler *WebCrawler, wg *sync.WaitGroup) {
 }
 
 // See if URL was Already Found
+// :param testString: string to test if it was already found
+// :param crawler: WebCrawler struct
+// :return: bool - was the URL visited already?
 func checkIfVisited(testString string, crawler *WebCrawler) bool {
 	for _, url := range crawler.visited {
 		if url == testString {
@@ -198,6 +206,9 @@ func checkIfVisited(testString string, crawler *WebCrawler) bool {
 }
 
 // Compare Two Slices
+// :param tmp: temporary list of visited URLs
+// :param crawled: array of already visited URLs
+// :return: bool - are these arrays equivalent?
 func checkEqual(tmp, crawled []string) bool {
 	if len(tmp) != len(crawled) {
 		return false
@@ -211,6 +222,8 @@ func checkEqual(tmp, crawled []string) bool {
 }
 
 // Trim Off Extra Stuff...
+// :param toTrim: string to trim down
+// :return: trimmed string
 func trimFromSpace(toTrim string) string {
 	if indx := strings.Index(toTrim, " "); indx != -1 {
 		return toTrim[:indx]
